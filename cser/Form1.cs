@@ -20,7 +20,19 @@ namespace cser
         scom comm = new scom();
         private void Start_Click(object sender, EventArgs e)
         {
-            comm.Start();           
+            try
+            {
+                comm.Open();
+                
+            } catch (Exception err)
+            {
+                MessageBox.Show(err.Message);
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            comm.Start();
         }
     }
 }
