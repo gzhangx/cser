@@ -34,5 +34,10 @@ namespace cser
         {
             comm.Start();
         }
+
+        private void Stop_Click(object sender, EventArgs e)
+        {
+            comm.Stop();
+        }
     }
 }
