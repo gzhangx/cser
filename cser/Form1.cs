@@ -39,5 +39,10 @@ namespace cser
         {
             comm.Stop();
         }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            comm.Info();
+        }
     }
 }

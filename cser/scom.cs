@@ -60,10 +60,10 @@ namespace cser
             //Write(new byte[] { 0xA5, 0x90 });
             Write(new byte[] { 0xA5, 0x60 });
             threadStarted = true;
-            if (_thread != null) return;
-            var buf = new byte[2048];
+            if (_thread != null) return;            
             _thread = new Thread(() =>
             {
+                var buf = new byte[2048];
                 while (threadStarted)
                 {
                     try
@@ -81,6 +81,10 @@ namespace cser
                        
         }
 
+        public void Info()
+        {
+            Write(new byte[] { 0xA5, 0x90 });
+        }
         public void Stop()
         {
             Write(new byte[] { 0xA5, 0x65 });
