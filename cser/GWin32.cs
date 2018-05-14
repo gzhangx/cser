@@ -48,6 +48,10 @@ namespace cser
    WriteFileCompletionDelegate lpCompletionRoutine);
 
         [DllImport("kernel32.dll")]
+        public static extern bool ReadFile(IntPtr hFile, [Out] byte[] lpBuffer,
+   uint nNumberOfBytesToRead, out uint lpNumRead, ref NativeOverlapped lpOverlapped);
+
+        [DllImport("kernel32.dll")]
         public static extern void SleepEx(uint dwMilliseconds, bool alertable);
 
         [DllImport("kernel32.dll", SetLastError = true)]
