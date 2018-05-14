@@ -73,6 +73,15 @@ namespace cser
             {
                 throwWinErr("CSerialCommHelper : Failed to Set Comm State");
             }
+
+
+            GWin32.COMMTIMEOUTS commTimeouts = new GWin32.COMMTIMEOUTS();
+            commTimeouts.ReadIntervalTimeout = 0;          // Never timeout, always wait for data.
+            commTimeouts.ReadTotalTimeoutMultiplier = 0;   // Do not allow big read timeout when big read buffer used
+            commTimeouts.ReadTotalTimeoutConstant = 0;     // Total read timeout (period of read loop)
+            commTimeouts.WriteTotalTimeoutConstant = 0;    // Const part of write timeout
+            commTimeouts.WriteTotalTimeoutMultiplier = 0;  // Variable part of write timeout (per byte)
+            GWin32.SetCommTimeouts(m_hCommPort, ref commTimeouts);
         }
 
         public void Start()
