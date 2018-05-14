@@ -17,12 +17,12 @@ namespace cser
             InitializeComponent();
         }
 
-        scom comm = new scom();
+        W32Serial comm = new W32Serial();
         private void Start_Click(object sender, EventArgs e)
         {
             try
             {
-                new W32Serial().Open();
+                comm.Open();
                 //comm.Open();
 
             } catch (Exception err)
@@ -43,7 +43,7 @@ namespace cser
 
         private void button2_Click(object sender, EventArgs e)
         {
-            comm.Info();
+           // comm.Info();
         }
     }
 }

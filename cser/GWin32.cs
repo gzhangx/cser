@@ -6,6 +6,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace cser
@@ -29,6 +30,22 @@ namespace cser
         public static extern bool GetCommState(IntPtr hFile, ref DCB lpDCB);
         [DllImport("kernel32.dll")]
         public static extern bool SetCommState(IntPtr hFile, ref DCB lpDCB);
+
+        [DllImport("kernel32.dll")]
+        static extern bool WaitCommEvent(IntPtr hFile, out uint lpEvtMask,
+            IntPtr lpOverlapped);
+
+        public delegate void WriteFileCompletionDelegate(UInt32 dwErrorCode,
+    UInt32 dwNumberOfBytesTransfered, ref NativeOverlapped lpOverlapped);
+        [DllImport("kernel32.dll")]
+        public static extern bool WriteFileEx(IntPtr hFile, byte[] lpBuffer,
+   uint nNumberOfBytesToWrite, [In] ref System.Threading.NativeOverlapped lpOverlapped,
+   WriteFileCompletionDelegate lpCompletionRoutine);
+
+        [DllImport("kernel32.dll")]
+        public static extern bool ReadFileEx(IntPtr hFile, [Out] byte[] lpBuffer,
+   uint nNumberOfBytesToRead, [In] ref System.Threading.NativeOverlapped lpOverlapped,
+   WriteFileCompletionDelegate lpCompletionRoutine);
 
         public enum DtrControl : int
         {

@@ -6,17 +6,25 @@ using System.IO.Ports;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace cser
 {
     public class W32Serial
     {
+        protected Thread _thread;
+        protected bool threadStarted = false;
         protected void throwWinErr(string text)
         {
             int err = Marshal.GetLastWin32Error();
+            throw new Exception($"{text} {err} {getWinErr()}");
+        }
+        protected string getWinErr()
+        {
+            int err = Marshal.GetLastWin32Error();
             string errorMessage = new Win32Exception(Marshal.GetLastWin32Error()).Message;
-            throw new Exception($"{text} {err} {errorMessage}");
+            return errorMessage;
         }
         protected IntPtr m_hCommPort;
         public void Open()
@@ -60,9 +68,77 @@ namespace cser
             dcb.DtrControl = GWin32.DtrControl.Enable;
             dcb.OutxDsrFlow = false;
 
+            dcb.Binary = true;
             if (!GWin32.SetCommState(m_hCommPort, ref dcb))
             {
                 throwWinErr("CSerialCommHelper : Failed to Set Comm State");
+            }
+        }
+
+        public void Start()
+        {
+            WriteComm(new byte[] { 0xA5, 0x60 });
+            threadStarted = true;
+            if (_thread != null) return;
+            _thread = new Thread(async () =>
+            {
+                var buf = new byte[2048];
+                while (threadStarted)
+                {
+                    try
+                    {
+                        int blen = await ReadComm(buf).ConfigureAwait(false);
+                        if (blen < 0) break;
+                        Console.WriteLine($"Got item {blen} {BitConverter.ToString(buf, 0, blen)}");
+                    }
+                    catch (TimeoutException)
+                    {
+                    }
+                }
+                Console.WriteLine("thread done");
+            });
+            _thread.Start();
+        }
+
+        protected Task<int> ReadComm(byte[] buf)
+        {
+            var tc = new TaskCompletionSource<int>();
+            NativeOverlapped ov = new System.Threading.NativeOverlapped();
+
+            if (!GWin32.ReadFileEx(m_hCommPort, buf, (uint)1, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
+            {
+                if (err != 0)
+                {
+                    Console.WriteLine("got err " + err);
+                    tc.SetException(new Exception("Read comm err" + err));
+                }
+                else
+                {
+                    Console.WriteLine("got len " + len);
+                    tc.SetResult((int)len);
+                }
+            }))
+            {
+                Console.WriteLine("failed read file " + getWinErr());
+
+            }
+            return tc.Task;
+        }
+        public void Stop()
+        {
+            WriteComm(new byte[] { 0xA5, 0x65 });
+        }
+
+        protected void WriteComm(byte[] buf)
+        {
+            NativeOverlapped ov = new System.Threading.NativeOverlapped();
+            if (!GWin32.WriteFileEx(m_hCommPort, buf, (uint)buf.Length, ref ov, (uint err,uint b, ref NativeOverlapped c)=>
+            {
+                if (err != 0)Console.WriteLine("Write come done " + err);
+                Console.WriteLine("Write come done tran=" + b);
+            }))
+            {
+                Console.WriteLine("failed write comm " + getWinErr());
             }
         }
     }
