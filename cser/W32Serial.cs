@@ -67,6 +67,9 @@ namespace cser
             dcb.DsrSensitivity = false;
             dcb.DtrControl = GWin32.DtrControl.Enable;
             dcb.OutxDsrFlow = false;
+            dcb.OutxCtsFlow = false;
+            dcb.InX = false;
+            dcb.RtsControl = GWin32.RtsControl.Disable;
 
             dcb.Binary = true;
             if (!GWin32.SetCommState(m_hCommPort, ref dcb))
