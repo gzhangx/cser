@@ -36,7 +36,7 @@ namespace cser
             FileShare.None, //0,    //(share) 0:cannot share the COM port                        
             IntPtr.Zero, //0,    //security  (None)                
             FileMode.Open, //OPEN_EXISTING,// creation : open_existing
-            FileAttributes.System, //FILE_FLAG_OVERLAPPED,// we want overlapped operation
+            0x20000000 | 0x40000000, //FILE_FLAG_OVERLAPPED,// we want overlapped operation
             IntPtr.Zero //0// no templates file for COM port...
             );
 
@@ -131,15 +131,20 @@ namespace cser
 
         protected void WriteComm(byte[] buf)
         {
-            NativeOverlapped ov = new System.Threading.NativeOverlapped();
-            if (!GWin32.WriteFileEx(m_hCommPort, buf, (uint)buf.Length, ref ov, (uint err,uint b, ref NativeOverlapped c)=>
+            new Thread(() =>
             {
-                if (err != 0)Console.WriteLine("Write come done " + err);
-                Console.WriteLine("Write come done tran=" + b);
-            }))
-            {
-                Console.WriteLine("failed write comm " + getWinErr());
-            }
+                NativeOverlapped ov = new System.Threading.NativeOverlapped();
+                if (!GWin32.WriteFileEx(m_hCommPort, buf, (uint)buf.Length, ref ov, (uint err, uint b, ref NativeOverlapped c) =>
+                {
+                    if (err != 0) Console.WriteLine("Write come done " + err);
+                    Console.WriteLine("Write come done tran=" + b);
+                }))
+                {
+                    Console.WriteLine("failed write comm " + getWinErr());
+                }
+                // IOCompletion routine is only called once this thread is in an alertable wait state.
+                GWin32.SleepEx(0xffffffff, true);
+            }).Start();            
         }
     }
 }

@@ -20,7 +20,7 @@ namespace cser
              [MarshalAs(UnmanagedType.U4)] FileShare share,
              IntPtr securityAttributes, // optional SECURITY_ATTRIBUTES struct or IntPtr.Zero
              [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
-             [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
+             [MarshalAs(UnmanagedType.U4)] uint flagsAndAttributes,
              IntPtr templateFile);
 
         [DllImport("kernel32.dll")]
@@ -46,6 +46,14 @@ namespace cser
         public static extern bool ReadFileEx(IntPtr hFile, [Out] byte[] lpBuffer,
    uint nNumberOfBytesToRead, [In] ref System.Threading.NativeOverlapped lpOverlapped,
    WriteFileCompletionDelegate lpCompletionRoutine);
+
+        [DllImport("kernel32.dll")]
+        public static extern void SleepEx(uint dwMilliseconds, bool alertable);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public  static extern bool GetOverlappedResult(IntPtr hFile,
+           ref System.Threading.NativeOverlapped lpOverlapped,
+           out uint lpNumberOfBytesTransferred, bool bWait);
 
         public enum DtrControl : int
         {
