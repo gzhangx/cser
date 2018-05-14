@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -28,7 +29,9 @@ namespace cser
             comm.BaudRate = 128000;
             comm.PortName = "COM3";
 
-            comm = new SerialPort("COM3", 128000, Parity.None, 8, StopBits.One); 
+            comm = new SerialPort("COM3", 128000, Parity.None, 8, StopBits.One);
+            comm.ReadTimeout = 0;
+            comm.RtsEnable = false;
         }
 
         private void Comm_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
@@ -78,7 +81,9 @@ namespace cser
                 Console.WriteLine("thread done");
             });
             _thread.Start();
-                       
+
+
+
         }
 
         public void Info()
@@ -92,6 +97,7 @@ namespace cser
         protected void Write(byte[] buf)
         {
             comm.Write(buf, 0, buf.Length);
+            comm.BaseStream.Flush();
         }
     }
 }

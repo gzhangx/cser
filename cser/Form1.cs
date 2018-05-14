@@ -22,8 +22,9 @@ namespace cser
         {
             try
             {
-                comm.Open();
-                
+                new W32Serial().Open();
+                //comm.Open();
+
             } catch (Exception err)
             {
                 MessageBox.Show(err.Message);
