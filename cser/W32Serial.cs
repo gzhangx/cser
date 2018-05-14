@@ -77,6 +77,7 @@ namespace cser
 
         public void Start()
         {
+            GWin32.PurgeComm(m_hCommPort, 0x0004 | 0x0008);
             WriteComm(new byte[] { 0xA5, 0x60 });
             threadStarted = true;
             if (_thread != null) return;
@@ -88,7 +89,7 @@ namespace cser
                     try
                     {
                         int blen = await ReadComm(buf).ConfigureAwait(false);
-                        if (blen < 0) break;
+                        if (blen <= 0) break;
                         Console.WriteLine($"Got item {blen} {BitConverter.ToString(buf, 0, blen)}");
                     }
                     catch (TimeoutException)
@@ -105,16 +106,16 @@ namespace cser
             var tc = new TaskCompletionSource<int>();
             NativeOverlapped ov = new System.Threading.NativeOverlapped();
 
-            if (!GWin32.ReadFileEx(m_hCommPort, buf, (uint)1, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
+            if (!GWin32.ReadFileEx(m_hCommPort, buf, (uint)buf.Length, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
             {
                 if (err != 0)
                 {
-                    Console.WriteLine("got err " + err);
+                    Console.WriteLine("read got err " + err);
                     tc.SetException(new Exception("Read comm err" + err));
                 }
                 else
                 {
-                    Console.WriteLine("got len " + len);
+                    Console.WriteLine("read got len " + len);
                     tc.SetResult((int)len);
                 }
             }))
@@ -122,6 +123,7 @@ namespace cser
                 Console.WriteLine("failed read file " + getWinErr());
 
             }
+            gwait();
             return tc.Task;
         }
         public void Stop()
@@ -129,6 +131,10 @@ namespace cser
             WriteComm(new byte[] { 0xA5, 0x65 });
         }
 
+        protected void gwait()
+        {
+            GWin32.SleepEx(0xffffffff, true);
+        }
         protected void WriteComm(byte[] buf)
         {
             new Thread(() =>
@@ -143,7 +149,7 @@ namespace cser
                     Console.WriteLine("failed write comm " + getWinErr());
                 }
                 // IOCompletion routine is only called once this thread is in an alertable wait state.
-                GWin32.SleepEx(0xffffffff, true);
+                gwait();
             }).Start();            
         }
     }

@@ -55,6 +55,9 @@ namespace cser
            ref System.Threading.NativeOverlapped lpOverlapped,
            out uint lpNumberOfBytesTransferred, bool bWait);
 
+        [DllImport("kernel32.dll")]
+        public static extern bool PurgeComm(IntPtr hFile, uint dwFlags);
+
         public enum DtrControl : int
         {
             /// <summary>
