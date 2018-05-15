@@ -93,51 +93,35 @@ namespace cser
             WriteComm(new byte[] { 0xA5, 0x60 });
             threadStarted = true;
             if (_thread != null) return;
-            _thread = new Thread(async () =>
+            _thread = new Thread(() =>
             {
                 var buf = new byte[2048];
                 while (threadStarted)
                 {
-                    try
+                    NativeOverlapped ov = new System.Threading.NativeOverlapped();
+
+                    if (!GWin32.ReadFileEx(m_hCommPort, buf, (uint)buf.Length, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
                     {
-                        int blen = await ReadComm(buf).ConfigureAwait(false);
-                        if (blen <= 0) break;
-                        Console.WriteLine($"Got item {blen} {BitConverter.ToString(buf, 0, blen)}");
-                    }
-                    catch (TimeoutException)
+                        if (err != 0)
+                        {
+                            Console.WriteLine("read got err " + err);                            
+                        }
+                        else
+                        {
+                            Console.WriteLine("read got len " + len);
+                        }
+                    }))
                     {
+                        Console.WriteLine("failed read file " + getWinErr());
+
                     }
+                    gwait();
                 }
                 Console.WriteLine("thread done");
             });
             _thread.Start();
         }
 
-        protected Task<int> ReadComm(byte[] buf)
-        {
-            var tc = new TaskCompletionSource<int>();
-            NativeOverlapped ov = new System.Threading.NativeOverlapped();
-
-            if (!GWin32.ReadFileEx(m_hCommPort, buf, (uint)buf.Length, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
-            {
-                if (err != 0)
-                {
-                    Console.WriteLine("read got err " + err);
-                    tc.SetException(new Exception("Read comm err" + err));
-                }
-                else
-                {
-                    Console.WriteLine("read got len " + len);
-                    tc.SetResult((int)len);
-                }
-            }))
-            {
-                Console.WriteLine("failed read file " + getWinErr());
-
-            }
-            gwait();
-            return tc.Task;
-        }
         public void Stop()
         {
             WriteComm(new byte[] { 0xA5, 0x65 });
