@@ -91,41 +91,29 @@ namespace cser
         {
             WriteComm(new byte[] { 0xA5, 0x90 });
         }
+
+        protected void SetTimeout(uint tm = GWin32.INFINITE)
+        {
+            GWin32.COMMTIMEOUTS commTimeouts = new GWin32.COMMTIMEOUTS();
+            commTimeouts.ReadIntervalTimeout = tm;
+            GWin32.SetCommTimeouts(m_hCommPort, ref commTimeouts);
+        }
         public void Start()
         {
             GWin32.PurgeComm(m_hCommPort, 0x0004 | 0x0008);
-            WriteComm(new byte[] { 0xA5, 0x60 });
-            //Info();
+            //WriteComm(new byte[] { 0xA5, 0x60 });
+            Info();
             threadStarted = true;
             if (_thread != null) return;
             _thread = new Thread(() =>
-            {                                                
+            {
+                NativeOverlapped ov = new System.Threading.NativeOverlapped();
                 while (threadStarted)
                 {                    
-                    var buf = new byte[4096];
-                    GWin32.COMMTIMEOUTS commTimeouts = new GWin32.COMMTIMEOUTS();
-                    commTimeouts.ReadIntervalTimeout = 0;
-                    GWin32.SetCommTimeouts(m_hCommPort, ref commTimeouts);
-                    GWin32.SetLastError(0);
-                    uint numRead;
-                    NativeOverlapped ov = new System.Threading.NativeOverlapped();
-                    ov.EventHandle = GWin32.CreateEvent(IntPtr.Zero, true, false, null);
-                    if (!GWin32.ReadFile(m_hCommPort, buf, (uint)buf.Length, out numRead, ref ov))
-                    {                        
-                        if (GWin32.GetLastError() == 997) //IO Pending
-                        {
-                            GWin32.WaitForSingleObject(ov.EventHandle, GWin32.INFINITE);
-                        }else
-                        {
-                            Console.WriteLine("read got err " + getWinErr());
-                        }
-                        GWin32.GetOverlappedResult(m_hCommPort, ref ov, out numRead, true);
-                    }
-                    GWin32.CloseHandle(ov.EventHandle);
-                    ov.EventHandle = IntPtr.Zero;
-                    Console.WriteLine("read " + numRead);
-                    continue;
-                    if (!GWin32.ReadFileEx(m_hCommPort, buf, (uint)1, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
+                    var buf1 = new byte[1];
+                    SetTimeout(0); //set always wait
+                    GWin32.SetLastError(0);                                                                              
+                    if (!GWin32.ReadFileEx(m_hCommPort, buf1, (uint)buf1.Length, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
                     {
                         if (err != 0)
                         {
@@ -133,17 +121,30 @@ namespace cser
                         }
                         else
                         {
-                            Console.Write(buf[0].ToString("X")+" ");
-                            uint trans=0xff;
-                            //NativeOverlapped rov = new NativeOverlapped();
-                            GWin32.GetOverlappedResult(m_hCommPort, ref ov1, out trans, true);
-                            //Console.WriteLine("read got len trans " + trans);
-                            //Console.WriteLine(BitConverter.ToString(buf));
+                            SetTimeout();
+                            Console.WriteLine("failed read file " + getWinErr());
+                            uint numRead;
+                            ov.EventHandle = GWin32.CreateEvent(IntPtr.Zero, true, false, null);
+                            var buf = new byte[2048];
+                            if (!GWin32.ReadFile(m_hCommPort, buf, (uint)buf.Length, out numRead, ref ov))
+                            {
+                                if (GWin32.GetLastError() == 997) //IO Pending
+                                {
+                                    GWin32.WaitForSingleObject(ov.EventHandle, GWin32.INFINITE);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("read got err " + getWinErr());
+                                }
+                                GWin32.GetOverlappedResult(m_hCommPort, ref ov, out numRead, true);
+                            }
+                            GWin32.CloseHandle(ov.EventHandle);
+                            ov.EventHandle = IntPtr.Zero;
+                            Console.WriteLine("got data " + numRead);
                         }
                     }))
                     {
-                        Console.WriteLine("failed read file " + getWinErr());
-
+                        
                     }
                     var le = GWin32.GetLastError();
                     if (le != 0)
