@@ -94,12 +94,15 @@ namespace cser
             threadStarted = true;
             if (_thread != null) return;
             _thread = new Thread(() =>
-            {
-                var buf = new byte[2048];
+            {                
+                GWin32.COMMTIMEOUTS commTimeouts = new GWin32.COMMTIMEOUTS();
+                commTimeouts.ReadIntervalTimeout = 0;
+                GWin32.SetCommTimeouts(m_hCommPort, ref commTimeouts);
                 while (threadStarted)
                 {
                     NativeOverlapped ov = new System.Threading.NativeOverlapped();
 
+                    var buf = new byte[2048];
                     if (!GWin32.ReadFileEx(m_hCommPort, buf, (uint)buf.Length, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
                     {
                         if (err != 0)
@@ -109,6 +112,9 @@ namespace cser
                         else
                         {
                             Console.WriteLine("read got len " + len);
+                            uint trans;
+                            GWin32.GetOverlappedResult(m_hCommPort, ref ov1, out trans, true);
+                            Console.WriteLine("read got len trans " + trans);
                         }
                     }))
                     {
