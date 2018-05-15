@@ -4,7 +4,9 @@ using System.Collections.Specialized;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,6 +74,20 @@ namespace cser
         [DllImport("kernel32.dll")]
         public static extern void SetLastError([In] uint err);
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern UInt32 WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr CreateEvent(IntPtr lpEventAttributes, bool bManualReset, bool bInitialState, string lpName);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        [SuppressUnmanagedCodeSecurity]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CloseHandle(IntPtr hObject);
+
+
+        public const uint INFINITE = 0xffffffff;
         public struct COMMTIMEOUTS
         {
             public UInt32 ReadIntervalTimeout;
