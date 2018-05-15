@@ -65,6 +65,13 @@ namespace cser
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool SetCommTimeouts(IntPtr hFile, [In] ref COMMTIMEOUTS lpCommTimeouts);
 
+        [DllImport("kernel32.dll")]
+        public static extern uint GetLastError();
+
+
+        [DllImport("kernel32.dll")]
+        public static extern void SetLastError([In] uint err);
+
         public struct COMMTIMEOUTS
         {
             public UInt32 ReadIntervalTimeout;

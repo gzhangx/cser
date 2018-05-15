@@ -94,15 +94,15 @@ namespace cser
             threadStarted = true;
             if (_thread != null) return;
             _thread = new Thread(() =>
-            {                
-                GWin32.COMMTIMEOUTS commTimeouts = new GWin32.COMMTIMEOUTS();
-                commTimeouts.ReadIntervalTimeout = 0;
-                GWin32.SetCommTimeouts(m_hCommPort, ref commTimeouts);
+            {                                
+                NativeOverlapped ov = new System.Threading.NativeOverlapped();
                 while (threadStarted)
-                {
-                    NativeOverlapped ov = new System.Threading.NativeOverlapped();
-
+                {                    
                     var buf = new byte[2048];
+                    GWin32.COMMTIMEOUTS commTimeouts = new GWin32.COMMTIMEOUTS();
+                    commTimeouts.ReadIntervalTimeout = 0;
+                    GWin32.SetCommTimeouts(m_hCommPort, ref commTimeouts);
+                    GWin32.SetLastError(0);
                     if (!GWin32.ReadFileEx(m_hCommPort, buf, (uint)buf.Length, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
                     {
                         if (err != 0)
@@ -112,14 +112,22 @@ namespace cser
                         else
                         {
                             Console.WriteLine("read got len " + len);
-                            uint trans;
-                            GWin32.GetOverlappedResult(m_hCommPort, ref ov1, out trans, true);
+                            uint trans=0xff;
+                            NativeOverlapped rov = new NativeOverlapped();
+                            GWin32.GetOverlappedResult(m_hCommPort, ref rov, out trans, true);
                             Console.WriteLine("read got len trans " + trans);
                         }
                     }))
                     {
                         Console.WriteLine("failed read file " + getWinErr());
 
+                    }
+                    var le = GWin32.GetLastError();
+                    if (le != 0)
+                    {
+                        _thread = null;
+                        Console.WriteLine("Read Error " + le);
+                        break;
                     }
                     gwait();
                 }
