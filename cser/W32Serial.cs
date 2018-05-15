@@ -101,8 +101,7 @@ namespace cser
         public void Start()
         {
             GWin32.PurgeComm(m_hCommPort, 0x0004 | 0x0008);
-            //WriteComm(new byte[] { 0xA5, 0x60 });
-            Info();
+            WriteComm(new byte[] { 0xA5, 0x60 });
             threadStarted = true;
             if (_thread != null) return;
             _thread = new Thread(() =>
@@ -112,21 +111,20 @@ namespace cser
                 {                    
                     var buf1 = new byte[1];
                     SetTimeout(0); //set always wait
-                    GWin32.SetLastError(0);                                                                              
-                    if (!GWin32.ReadFileEx(m_hCommPort, buf1, (uint)buf1.Length, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
+                    GWin32.SetLastError(0);
+                    GWin32.ReadFileEx(m_hCommPort, buf1, (uint)buf1.Length, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
                     {
                         if (err != 0)
                         {
-                            Console.WriteLine("read got err " + err);                            
+                            Console.WriteLine("read got err " + err);
                         }
                         else
                         {
-                            SetTimeout();
-                            Console.WriteLine("failed read file " + getWinErr());
+                            SetTimeout();                            
                             uint numRead;
                             ov.EventHandle = GWin32.CreateEvent(IntPtr.Zero, true, false, null);
-                            var buf = new byte[2048];
-                            if (!GWin32.ReadFile(m_hCommPort, buf, (uint)buf.Length, out numRead, ref ov))
+                            var tbuf = new byte[2048];
+                            if (!GWin32.ReadFile(m_hCommPort, tbuf, (uint)tbuf.Length, out numRead, ref ov))
                             {
                                 if (GWin32.GetLastError() == 997) //IO Pending
                                 {
@@ -141,11 +139,13 @@ namespace cser
                             GWin32.CloseHandle(ov.EventHandle);
                             ov.EventHandle = IntPtr.Zero;
                             Console.WriteLine("got data " + numRead);
+                            var buf = new byte[1 + numRead];
+                            buf[0] = buf1[0];
+                            if (numRead > 0)
+                                Array.Copy(tbuf, 0, buf, 1, numRead);
+                            Console.WriteLine(BitConverter.ToString(buf));
                         }
-                    }))
-                    {
-                        
-                    }
+                    });
                     var le = GWin32.GetLastError();
                     if (le != 0)
                     {
