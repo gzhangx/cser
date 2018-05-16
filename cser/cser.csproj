@@ -60,6 +60,7 @@
     <Compile Include="scom.cs" />
     <Compile Include="W32Serial.cs" />
     <Compile Include="GWin32.cs" />
+    <Compile Include="X4Tran.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

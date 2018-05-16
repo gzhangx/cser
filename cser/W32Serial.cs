@@ -100,10 +100,10 @@ namespace cser
         }
         public void Start()
         {
+            if (_thread != null) return;
             GWin32.PurgeComm(m_hCommPort, 0x0004 | 0x0008);
             WriteComm(new byte[] { 0xA5, 0x60 });
-            threadStarted = true;
-            if (_thread != null) return;
+            threadStarted = true;            
             _thread = new Thread(() =>
             {
                 NativeOverlapped ov = new System.Threading.NativeOverlapped();
