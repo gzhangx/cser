@@ -15,6 +15,7 @@ namespace cser
         public Form1()
         {
             InitializeComponent();
+            this.DoubleBuffered = true;
         }
 
         W32Serial comm = new W32Serial();
@@ -64,9 +65,9 @@ namespace cser
             comm.Info();
         }
 
+        List<Point> lpoints = new List<Point>();
         private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-            var lpoints = new List<Point>();
+        {            
             lock(lockobj)
             {
                 lpoints.AddRange(gpoints);

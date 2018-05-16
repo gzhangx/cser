@@ -27,11 +27,15 @@ namespace cser
                 if (lsn == 0)
                 {
                     Console.WriteLine("warning, 0 lsn!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1");
-                    Console.WriteLine(data);
+                    Console.WriteLine(BitConverter.ToString(data));
                     return;
                 }
-                Console.WriteLine($"{ lsn} fs { fsa} lsa { lsa}");
+                //Console.WriteLine($"{ lsn} fs { fsa} lsa { lsa}");
                 Func<uint,uint> getLen = start => {
+                    if (start+1 > data.Length)
+                    {
+                        Console.WriteLine($"bad start on data, start={start} len={data.Length} data={BitConverter.ToString(data)}");
+                    }
                     var dstart = 10;
                     return (data[start + dstart] | (((uint)data[start + dstart + 1]) << 8)) >> 2;
                 };

@@ -107,56 +107,64 @@ namespace cser
             _thread = new Thread(() =>
             {
                 NativeOverlapped ov = new System.Threading.NativeOverlapped();
-                while (threadStarted)
-                {                    
-                    var buf1 = new byte[1];
-                    SetTimeout(0); //set always wait
-                    GWin32.SetLastError(0);
-                    GWin32.ReadFileEx(m_hCommPort, buf1, (uint)buf1.Length, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
+                try
+                {
+                    while (threadStarted)
                     {
-                        if (err != 0)
+                        var buf1 = new byte[1];
+                        SetTimeout(0); //set always wait
+                        GWin32.SetLastError(0);
+                        GWin32.ReadFileEx(m_hCommPort, buf1, (uint)buf1.Length, ref ov, (uint err, uint len, ref NativeOverlapped ov1) =>
                         {
-                            Console.WriteLine("read got err " + err);
-                        }
-                        else
-                        {
-                            SetTimeout();                            
-                            uint numRead;
-                            ov.EventHandle = GWin32.CreateEvent(IntPtr.Zero, true, false, null);
-                            var tbuf = new byte[2048];
-                            if (!GWin32.ReadFile(m_hCommPort, tbuf, (uint)tbuf.Length, out numRead, ref ov))
+                            if (err != 0)
                             {
-                                if (GWin32.GetLastError() == 997) //IO Pending
-                                {
-                                    GWin32.WaitForSingleObject(ov.EventHandle, GWin32.INFINITE);
-                                }
-                                else
-                                {
-                                    Console.WriteLine("read got err " + getWinErr());
-                                }
-                                GWin32.GetOverlappedResult(m_hCommPort, ref ov, out numRead, true);
+                                Console.WriteLine("read got err " + err);
                             }
-                            GWin32.CloseHandle(ov.EventHandle);
-                            ov.EventHandle = IntPtr.Zero;
-                            Console.WriteLine("got data " + numRead);
-                            var buf = new byte[1 + numRead];
-                            buf[0] = buf1[0];
-                            if (numRead > 0)
+                            else
                             {
-                                Array.Copy(tbuf, 0, buf, 1, numRead);
-                                tran.Translate(buf);
-                            }
+                                SetTimeout();
+                                uint numRead;
+                                ov.EventHandle = GWin32.CreateEvent(IntPtr.Zero, true, false, null);
+                                var tbuf = new byte[2048];
+                                if (!GWin32.ReadFile(m_hCommPort, tbuf, (uint)tbuf.Length, out numRead, ref ov))
+                                {
+                                    if (GWin32.GetLastError() == 997) //IO Pending
+                                {
+                                        GWin32.WaitForSingleObject(ov.EventHandle, GWin32.INFINITE);
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("read got err " + getWinErr());
+                                    }
+                                    GWin32.GetOverlappedResult(m_hCommPort, ref ov, out numRead, true);
+                                }
+                                GWin32.CloseHandle(ov.EventHandle);
+                                ov.EventHandle = IntPtr.Zero;
+                                //Console.WriteLine("got data " + numRead);
+                                var buf = new byte[1 + numRead];
+                                buf[0] = buf1[0];
+                                if (numRead > 0)
+                                {
+                                    Array.Copy(tbuf, 0, buf, 1, numRead);
+                                    tran.Translate(buf);
+                                }
                             //Console.WriteLine(BitConverter.ToString(buf));
                         }
-                    });
-                    var le = GWin32.GetLastError();
-                    if (le != 0)
-                    {
-                        _thread = null;
-                        Console.WriteLine("Read Error " + le);
-                        break;
+                        });
+                        var le = GWin32.GetLastError();
+                        if (le != 0)
+                        {
+                            _thread = null;
+                            Console.WriteLine("Read Error " + le);
+                            break;
+                        }
+                        gwait();
                     }
-                    gwait();
+                } catch (InvalidOperationException iv)
+                {
+                    _thread = null;
+                    threadStarted = false;
+                    Console.WriteLine("InvalidOperationException " + iv.Message);
                 }
                 Console.WriteLine("thread done");
             });
