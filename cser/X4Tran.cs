@@ -14,8 +14,8 @@ namespace cser
     public class X4Tran : IX4Tran
     {
         Action<int, int> addAction;
-        Action<int> zeroAng;
-        public X4Tran(Action<int,int> add, Action<int> ang)
+        Action<double> zeroAng;
+        public X4Tran(Action<int,int> add, Action<double> ang)
         {
             addAction = add;
             zeroAng = ang;
@@ -65,7 +65,7 @@ namespace cser
                 {
                     Console.WriteLine("warning, 0 lsn!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1 " + count);
                     count = 0;
-                    zeroAng((int)fsa);
+                    zeroAng(fsa);
                     Console.WriteLine(BitConverter.ToString(data));
                     return;
                 }
