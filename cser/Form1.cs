@@ -24,7 +24,8 @@ namespace cser
             System.Reflection.PropertyInfo controlProperty = typeof(System.Windows.Forms.Control)
         .GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             controlProperty.SetValue(panel1, true, null);
-            
+
+            panel1.dd();   
         }
 
         W32Serial comm = new W32Serial();

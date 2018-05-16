@@ -32,7 +32,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.Stop = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.panel1 = new PaintPanel();
             this.SuspendLayout();
             // 
             // Open
@@ -106,7 +106,7 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button Stop;
         private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Panel panel1;
+        private PaintPanel panel1;
     }
 }
 
