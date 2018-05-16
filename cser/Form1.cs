@@ -12,16 +12,19 @@ namespace cser
 {
     public partial class Form1 : Form
     {
+        Bitmap Backbuffer;
         public Form1()
         {
             InitializeComponent();
             this.SetStyle(
             ControlStyles.UserPaint |
             ControlStyles.AllPaintingInWmPaint |
-            ControlStyles.OptimizedDoubleBuffer, true);
+            ControlStyles.DoubleBuffer, true);
+
             System.Reflection.PropertyInfo controlProperty = typeof(System.Windows.Forms.Control)
         .GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             controlProperty.SetValue(panel1, true, null);
+            
         }
 
         W32Serial comm = new W32Serial();
@@ -96,14 +99,25 @@ namespace cser
             int h = panel1.Height/2;
 
             int max = 3000; // Math.Max(lpoints.Max(p => Math.Abs(p.X)), lpoints.Max(p => Math.Abs(p.Y)))*2+1;
-            points.ForEach(p =>
+            using (var g = Graphics.FromImage(Backbuffer))
             {
-                int x = (p.X * h / max) + w;
-                int y = ((p.Y * h) / max) + h;
-                e.Graphics.FillRectangle(Brushes.Black, x, y, 1, 1);
-            });
+                g.Clear(Color.White);                
 
+                points.ForEach(p =>
+                {
+                    int x = (p.X * h / max) + w;
+                    int y = ((p.Y * h) / max) + h;
+                    g.FillRectangle(Brushes.Black, x, y, 1, 1);
+                });
+            }
+            e.Graphics.DrawImageUnscaled(Backbuffer, 0, 0);
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            Backbuffer = new Bitmap(panel1.Width, panel1.Height);
+        }
+
     }
 }
 
