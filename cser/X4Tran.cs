@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,9 +18,42 @@ namespace cser
         {
             addAction = add;
         }
+        MemoryStream ms = new MemoryStream();
         public void Translate(byte[] data)
         {
-            if (data.Length > 2 && data[0] == 0xaa && data[1] == 0x55)
+            if (ms.Length == 0)
+            {
+                if (data.Length > 3 && data[0] == 0xaa && data[1] == 0x55)
+                {
+                    var lsn = ((uint)data[3]);
+                    int totalLen = 10 + (int)(lsn * 2);
+                    if (data.Length < totalLen)
+                    {
+                        ms.Write(data, 0, data.Length);
+                    }
+                    else if (data.Length > totalLen)
+                    {
+                        ms.Write(data, totalLen, data.Length - totalLen);
+                        var nd = new byte[totalLen];
+                        Array.Copy(data, nd, totalLen);
+                        DoTranslate(nd);
+                        var ndata = ms.ToArray();
+                        ms.SetLength(0);
+                        Translate(ndata);
+                    }
+                    else DoTranslate(data);
+                }
+            }else
+            {
+                ms.Write(data, 0, data.Length);
+                var ndata = ms.ToArray();
+                ms.SetLength(0);
+                Translate(ndata);
+            }
+        }
+        public void DoTranslate(byte[] data)
+        {
+            //if (data.Length > 2 && data[0] == 0xaa && data[1] == 0x55)
             {
                 var fsa = getAngle(data, 4);
                 var lsa = getAngle(data, 6);

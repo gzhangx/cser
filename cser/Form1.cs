@@ -76,13 +76,15 @@ namespace cser
             if (!lpoints.Any()) return;
             int w = panel1.Width/2;
             int h = panel1.Height/2;
-            int max = Math.Max(lpoints.Max(p => Math.Abs(p.X)), lpoints.Max(p => Math.Abs(p.Y)))*2+1;
+
+            int max = 1500; // Math.Max(lpoints.Max(p => Math.Abs(p.X)), lpoints.Max(p => Math.Abs(p.Y)))*2+1;
             lpoints.ForEach(p =>
             {
                 int x = (p.X * h / max) + w;
                 int y = ((p.Y * h) / max) + h;
                 e.Graphics.FillRectangle(Brushes.Black, x, y, 1, 1);
             });
+
         }
     }
 }
