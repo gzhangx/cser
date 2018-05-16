@@ -93,8 +93,8 @@ namespace cser
                     //Console.WriteLine(`data ${toHex(data[i*2+dstart])} ${toHex(data[i*2+1+dstart])} len=${len} `);
                     var ai = (diffAng / lsn * i) + anglefsa + calculateCorr(len);
                     //Console.WriteLine(`len=${len} ang=${ai*180/Math.PI}`);
-                    var x = Math.Cos(-ai + curZeroAng) * len;
-                    var y = Math.Sin(-ai + curZeroAng) * len;
+                    var x = Math.Cos(ai) * len;
+                    var y = Math.Sin(ai) * len;
 
                     if (len != 0)
                     {
