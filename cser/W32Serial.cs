@@ -98,7 +98,7 @@ namespace cser
             commTimeouts.ReadIntervalTimeout = tm;
             GWin32.SetCommTimeouts(m_hCommPort, ref commTimeouts);
         }
-        public void Start()
+        public void Start(IX4Tran tran)
         {
             if (_thread != null) return;
             GWin32.PurgeComm(m_hCommPort, 0x0004 | 0x0008);
@@ -142,8 +142,11 @@ namespace cser
                             var buf = new byte[1 + numRead];
                             buf[0] = buf1[0];
                             if (numRead > 0)
+                            {
                                 Array.Copy(tbuf, 0, buf, 1, numRead);
-                            Console.WriteLine(BitConverter.ToString(buf));
+                                tran.Translate(buf);
+                            }
+                            //Console.WriteLine(BitConverter.ToString(buf));
                         }
                     });
                     var le = GWin32.GetLastError();

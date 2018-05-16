@@ -18,6 +18,7 @@ namespace cser
         }
 
         W32Serial comm = new W32Serial();
+        X4Tran tran = new X4Tran();
         private void Start_Click(object sender, EventArgs e)
         {
             try
@@ -33,7 +34,7 @@ namespace cser
 
         private void button1_Click(object sender, EventArgs e)
         {
-            comm.Start();
+            comm.Start(tran);
         }
 
         private void Stop_Click(object sender, EventArgs e)

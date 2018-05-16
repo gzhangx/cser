@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace cser
 {
-    public class X4Tran
+    public interface IX4Tran
+    {
+        void Translate(byte[] data);
+    }
+    public class X4Tran : IX4Tran
     {
         public void Translate(byte[] data)
         {
