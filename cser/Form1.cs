@@ -18,7 +18,10 @@ namespace cser
         }
 
         W32Serial comm = new W32Serial();
-        X4Tran tran = new X4Tran();
+        public List<Point> gpoints = new List<Point>();
+        object lockobj = new object();
+
+        X4Tran tran;
         private void Start_Click(object sender, EventArgs e)
         {
             try
@@ -34,6 +37,20 @@ namespace cser
 
         private void button1_Click(object sender, EventArgs e)
         {
+            if (tran == null)
+            {
+                tran = new X4Tran((x, y) =>
+                {
+                    lock (lockobj)
+                    {
+                        gpoints.Add(new Point(x, y));
+                        panel1.BeginInvoke(new Action(() =>
+                        {
+                            panel1.Invalidate();
+                        }));
+                    }
+                });
+            }
             comm.Start(tran);
         }
 
@@ -46,5 +63,26 @@ namespace cser
         {
             comm.Info();
         }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+            var lpoints = new List<Point>();
+            lock(lockobj)
+            {
+                lpoints.AddRange(gpoints);
+                gpoints.Clear();
+            }
+            if (!lpoints.Any()) return;
+            int w = panel1.Width/2;
+            int h = panel1.Height/2;
+            int max = Math.Max(lpoints.Max(p => Math.Abs(p.X)), lpoints.Max(p => Math.Abs(p.Y)))*2+1;
+            lpoints.ForEach(p =>
+            {
+                int x = (p.X * h / max) + w;
+                int y = ((p.Y * h) / max) + h;
+                e.Graphics.FillRectangle(Brushes.Black, x, y, 1, 1);
+            });
+        }
     }
 }
+

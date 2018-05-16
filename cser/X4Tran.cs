@@ -12,6 +12,11 @@ namespace cser
     }
     public class X4Tran : IX4Tran
     {
+        Action<int, int> addAction;
+        public X4Tran(Action<int,int> add)
+        {
+            addAction = add;
+        }
         public void Translate(byte[] data)
         {
             if (data.Length > 2 && data[0] == 0xaa && data[1] == 0x55)
@@ -50,7 +55,7 @@ namespace cser
                     {
                         //fs.appendFile('data.txt',`${ x},${ y}\r\n`,err => {
                         //if (err) Console.WriteLine(err);
-                        Console.WriteLine($"{x} {y}");
+                        addAction((int)x, (int)y);
                     };
                 }
             }

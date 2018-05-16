@@ -99,10 +99,10 @@ namespace cser
             GWin32.SetCommTimeouts(m_hCommPort, ref commTimeouts);
         }
         public void Start(IX4Tran tran)
-        {
-            if (_thread != null) return;
+        {            
             GWin32.PurgeComm(m_hCommPort, 0x0004 | 0x0008);
             WriteComm(new byte[] { 0xA5, 0x60 });
+            if (_thread != null) return;
             threadStarted = true;            
             _thread = new Thread(() =>
             {
