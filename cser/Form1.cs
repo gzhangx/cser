@@ -54,6 +54,10 @@ namespace cser
                 {
                     zeroAng = z;
                     Console.WriteLine("zero angle is " + z);
+                    lock (lockobj)
+                    {
+                        lpoints.Clear();
+                    }
                 });
             }
             comm.Start(tran);
@@ -71,18 +75,22 @@ namespace cser
 
         List<Point> lpoints = new List<Point>();
         private void panel1_Paint(object sender, PaintEventArgs e)
-        {            
+        {
+            var points = new List<Point>();
             lock(lockobj)
             {
                 lpoints.AddRange(gpoints);
                 gpoints.Clear();
+                if (!lpoints.Any()) return;
+                points.AddRange(lpoints);
             }
-            if (!lpoints.Any()) return;
+            
+            
             int w = panel1.Width/2;
             int h = panel1.Height/2;
 
-            int max = 1500; // Math.Max(lpoints.Max(p => Math.Abs(p.X)), lpoints.Max(p => Math.Abs(p.Y)))*2+1;
-            lpoints.ForEach(p =>
+            int max = 3000; // Math.Max(lpoints.Max(p => Math.Abs(p.X)), lpoints.Max(p => Math.Abs(p.Y)))*2+1;
+            points.ForEach(p =>
             {
                 int x = (p.X * h / max) + w;
                 int y = ((p.Y * h) / max) + h;

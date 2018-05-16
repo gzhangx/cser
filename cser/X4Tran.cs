@@ -54,6 +54,7 @@ namespace cser
                 Translate(ndata);
             }
         }
+        double curZeroAng = 0;
         public void DoTranslate(byte[] data)
         {
             //if (data.Length > 2 && data[0] == 0xaa && data[1] == 0x55)
@@ -66,6 +67,7 @@ namespace cser
                     Console.WriteLine("warning, 0 lsn!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1 " + count);
                     count = 0;
                     zeroAng(fsa);
+                    curZeroAng = fsa;
                     Console.WriteLine(BitConverter.ToString(data));
                     return;
                 }
@@ -91,8 +93,8 @@ namespace cser
                     //Console.WriteLine(`data ${toHex(data[i*2+dstart])} ${toHex(data[i*2+1+dstart])} len=${len} `);
                     var ai = (diffAng / lsn * i) + anglefsa + calculateCorr(len);
                     //Console.WriteLine(`len=${len} ang=${ai*180/Math.PI}`);
-                    var x = Math.Cos(ai) * len;
-                    var y = Math.Sin(ai) * len;
+                    var x = Math.Cos(-ai + curZeroAng) * len;
+                    var y = Math.Sin(-ai + curZeroAng) * len;
 
                     if (len != 0)
                     {
