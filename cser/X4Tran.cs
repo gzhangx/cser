@@ -14,11 +14,14 @@ namespace cser
     public class X4Tran : IX4Tran
     {
         Action<int, int> addAction;
-        public X4Tran(Action<int,int> add)
+        Action<int> zeroAng;
+        public X4Tran(Action<int,int> add, Action<int> ang)
         {
             addAction = add;
+            zeroAng = ang;
         }
         MemoryStream ms = new MemoryStream();
+        int count = 0;
         public void Translate(byte[] data)
         {
             if (ms.Length == 0)
@@ -60,7 +63,9 @@ namespace cser
                 var lsn = ((uint)data[3]) - 1;
                 if (lsn == 0)
                 {
-                    Console.WriteLine("warning, 0 lsn!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1");
+                    Console.WriteLine("warning, 0 lsn!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1 " + count);
+                    count = 0;
+                    zeroAng((int)fsa);
                     Console.WriteLine(BitConverter.ToString(data));
                     return;
                 }
@@ -94,6 +99,7 @@ namespace cser
                         //fs.appendFile('data.txt',`${ x},${ y}\r\n`,err => {
                         //if (err) Console.WriteLine(err);
                         addAction((int)x, (int)y);
+                        count++;
                     };
                 }
             }

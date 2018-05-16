@@ -35,7 +35,7 @@ namespace cser
                 MessageBox.Show(err.Message);
             }
         }
-
+        int zeroAng = 0;
         private void button1_Click(object sender, EventArgs e)
         {
             if (tran == null)
@@ -50,6 +50,10 @@ namespace cser
                             panel1.Invalidate();
                         }));
                     }
+                }, z=>
+                {
+                    zeroAng = z;
+                    Console.WriteLine("zero angle is " + z);
                 });
             }
             comm.Start(tran);
