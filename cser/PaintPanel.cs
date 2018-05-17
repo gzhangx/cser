@@ -62,7 +62,8 @@ namespace cser
             using (var g = Graphics.FromImage(Backbuffer))
             {
                 g.Clear(Color.White);
-
+                g.DrawLine(Pens.Black, 0, h, Width, h);
+                g.DrawLine(Pens.Black, w, 0, w, Height);
                 points.ForEach(p =>
                 {
                     int x = (p.X * h / max) + w;
