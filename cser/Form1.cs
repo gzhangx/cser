@@ -28,16 +28,6 @@ namespace cser
             //panel1.dd();   
         }
 
-        protected override CreateParams CreateParams
-        {
-            get
-            {
-                CreateParams handleParam = base.CreateParams;
-                handleParam.ExStyle |= 0x02000000;   // WS_EX_COMPOSITED       
-                return handleParam;
-            }
-        }
-
         W32Serial comm = new W32Serial();
         public List<Point> gpoints = new List<Point>();
         object lockobj = new object();
@@ -101,17 +91,12 @@ namespace cser
         }
 
         List<Point> lpoints = new List<Point>();
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-            
-        }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             Backbuffer = new Bitmap(panel1.Width, panel1.Height);
         }
 
-        protected override void OnPaint(PaintEventArgs e) { }
     }
 }
 
