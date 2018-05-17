@@ -13,9 +13,9 @@ namespace cser
     }
     public class X4Tran : IX4Tran
     {
-        Action<int, int> addAction;
+        Action<int, int, double, int> addAction;
         Action<double> zeroAng;
-        public X4Tran(Action<int,int> add, Action<double> ang)
+        public X4Tran(Action<int, int, double, int> add, Action<double> ang)
         {
             addAction = add;
             zeroAng = ang;
@@ -63,12 +63,10 @@ namespace cser
                 var lsa = getAngle(data, 6);
                 var lsn = ((uint)data[3]) - 1;
                 if (lsn == 0)
-                {
-                    Console.WriteLine("warning, 0 lsn!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1 " + count);
+                {                    
                     count = 0;
                     zeroAng(fsa);
-                    curZeroAng = fsa;
-                    Console.WriteLine(BitConverter.ToString(data));
+                    curZeroAng = fsa;                    
                     return;
                 }
                 //Console.WriteLine($"{ lsn} fs { fsa} lsa { lsa}");
@@ -100,7 +98,7 @@ namespace cser
                     {
                         //fs.appendFile('data.txt',`${ x},${ y}\r\n`,err => {
                         //if (err) Console.WriteLine(err);
-                        addAction((int)x, (int)y);
+                        addAction((int)x, (int)y, ai, (int)len);
                         count++;
                     };
                 }

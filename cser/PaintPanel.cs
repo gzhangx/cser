@@ -12,13 +12,16 @@ namespace cser
     {
         Bitmap Backbuffer;
         List<Point> _points = new List<Point>();
+        List<Point> _angleLen = new List<Point>();
         object lockobj = new object();
-        public void AddPoints(List<Point> o)
+        public void AddPoints(List<Point> o, List<Point> al)
         {
             lock(lockobj)
             {
                 _points.Clear();
                 _points.AddRange(o);
+                _angleLen.Clear();
+                _angleLen.AddRange(al);
             }
         }
         public PaintPanel()

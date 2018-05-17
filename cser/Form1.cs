@@ -46,15 +46,17 @@ namespace cser
             }
         }
         double zeroAng = 0;
+        public List<Point> angleLen = new List<Point>();
         private void button1_Click(object sender, EventArgs e)
         {
             if (tran == null)
             {
-                tran = new X4Tran((x, y) =>
+                tran = new X4Tran((x, y, angle, len) =>
                 {
                     lock (lockobj)
                     {
                         gpoints.Add(new Point(x, y));
+                        angleLen.Add(new Point((int)(angle/Math.PI*180), len));
                         panel1.BeginInvoke(new Action(() =>
                         {
                             panel1.Invalidate();
@@ -72,7 +74,8 @@ namespace cser
                             lpoints.AddRange(gpoints);
                             gpoints.Clear();
                             if (!lpoints.Any()) return;
-                            panel1.AddPoints(lpoints);
+                            panel1.AddPoints(lpoints, angleLen);
+                            angleLen.Clear();
                         }
                     }
                 });
