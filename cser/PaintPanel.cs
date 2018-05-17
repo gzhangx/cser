@@ -33,7 +33,11 @@ namespace cser
         protected override void OnResize(EventArgs eventargs)
         {
             base.OnResize(eventargs);
-            Backbuffer = new Bitmap(Width, Height);
+            int w = Width;
+            int h = Height;
+            if (w < 100) w = 100;
+            if (h < 100) h = 100;
+            Backbuffer = new Bitmap(w, h);
         }
         public void dd()
         {

@@ -32,7 +32,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.Stop = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
-            this.panel1 = new PaintPanel();
+            this.panel1 = new cser.PaintPanel();
             this.SuspendLayout();
             // 
             // Open
@@ -77,9 +77,11 @@
             // 
             // panel1
             // 
-            this.panel1.Location = new System.Drawing.Point(29, 13);
+            this.panel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(420, 267);
+            this.panel1.Size = new System.Drawing.Size(617, 267);
             this.panel1.TabIndex = 4;
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
             // 
@@ -87,7 +89,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(507, 360);
+            this.ClientSize = new System.Drawing.Size(617, 400);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.Stop);
