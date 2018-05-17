@@ -25,7 +25,17 @@ namespace cser
         .GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             controlProperty.SetValue(panel1, true, null);
 
-            panel1.dd();   
+            //panel1.dd();   
+        }
+
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams handleParam = base.CreateParams;
+                handleParam.ExStyle |= 0x02000000;   // WS_EX_COMPOSITED       
+                return handleParam;
+            }
         }
 
         W32Serial comm = new W32Serial();
@@ -67,6 +77,13 @@ namespace cser
                     lock (lockobj)
                     {
                         lpoints.Clear();
+                        
+                        {
+                            lpoints.AddRange(gpoints);
+                            gpoints.Clear();
+                            if (!lpoints.Any()) return;
+                            panel1.AddPoints(lpoints);
+                        }
                     }
                 });
             }
@@ -86,32 +103,7 @@ namespace cser
         List<Point> lpoints = new List<Point>();
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
-            var points = new List<Point>();
-            lock(lockobj)
-            {
-                lpoints.AddRange(gpoints);
-                gpoints.Clear();
-                if (!lpoints.Any()) return;
-                points.AddRange(lpoints);
-            }
             
-            
-            int w = panel1.Width/2;
-            int h = panel1.Height/2;
-
-            int max = 3000; // Math.Max(lpoints.Max(p => Math.Abs(p.X)), lpoints.Max(p => Math.Abs(p.Y)))*2+1;
-            using (var g = Graphics.FromImage(Backbuffer))
-            {
-                g.Clear(Color.White);                
-
-                points.ForEach(p =>
-                {
-                    int x = (p.X * h / max) + w;
-                    int y = ((p.Y * h) / max) + h;
-                    g.FillRectangle(Brushes.Black, x, y, 1, 1);
-                });
-            }
-            e.Graphics.DrawImageUnscaled(Backbuffer, 0, 0);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -119,6 +111,7 @@ namespace cser
             Backbuffer = new Bitmap(panel1.Width, panel1.Height);
         }
 
+        protected override void OnPaint(PaintEventArgs e) { }
     }
 }
 
