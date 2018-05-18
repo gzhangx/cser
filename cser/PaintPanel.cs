@@ -75,16 +75,40 @@ namespace cser
                 points.ForEach(p =>
                 {
                     int x = (p.X * h / max) + w;
-                    int y = ((p.Y * h) / max) + h;
+                    int y = h - ((p.Y * h) / max);
                     g.FillRectangle(Brushes.Black, x, y, 1, 1);
                 });
 
                 if (mouseMoved)
                 {
                     g.DrawLine(Pens.Blue, mouseX, mouseY, w, h);
+                    int x = mouseX - w;
+                    int y = h - mouseY;
+                    var rad = Math.Atan2(y, x);
                     if (_showInfo != null)
                     {
-                        _showInfo.SetTextInfo($"{mouseX} {mouseY}");
+                        double minDiff = 0;
+                        double maxDiff = 0;
+                        bool found = false;
+                        Point minal = new Point();
+                        foreach(var al in _angleLen)
+                        {
+                            var diff = Math.Abs(al.X - (rad*180/Math.PI));
+                            if (!found)
+                            {
+                                minal = al;
+                                maxDiff = minDiff = diff;
+                            }else
+                            {
+                                if (diff > maxDiff) maxDiff = diff;
+                                else if (diff < minDiff)
+                                {
+                                    minDiff = diff;
+                                    minal = al;
+                                }
+                            }
+                        }
+                        _showInfo.SetTextInfo($"{mouseX - w} {h - mouseY} {rad*180/Math.PI} min={minDiff} max={maxDiff} ang={minal.X} len={minal.Y}");
                     }
                 }
             }
