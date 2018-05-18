@@ -11,11 +11,33 @@ namespace cser
     {
         void Translate(byte[] data);
     }
+    public class RadAndLen
+    {
+        public double Rad { get; private set; }
+        public int Len { get; private set; }
+        public RadAndLen(double ang, int len)
+        {
+            Rad = ang;
+            Len = len;
+        }
+        public int X { get
+            {
+                return (int)(Math.Cos(Rad) * Len);
+            }
+        }
+        public int Y
+        {
+            get
+            {
+                return (int)(Math.Sin(Rad) * Len);
+            }
+        }
+    }
     public class X4Tran : IX4Tran
     {
-        Action<int, int, double, int> addAction;
+        Action<RadAndLen> addAction;
         Action<double> zeroAng;
-        public X4Tran(Action<int, int, double, int> add, Action<double> ang)
+        public X4Tran(Action<RadAndLen> add, Action<double> ang)
         {
             addAction = add;
             zeroAng = ang;
@@ -91,14 +113,14 @@ namespace cser
                     //Console.WriteLine(`data ${toHex(data[i*2+dstart])} ${toHex(data[i*2+1+dstart])} len=${len} `);
                     var ai = (diffAng / lsn * i) + anglefsa + calculateCorr(len);
                     //Console.WriteLine(`len=${len} ang=${ai*180/Math.PI}`);
-                    var x = Math.Cos(ai) * len;
-                    var y = Math.Sin(ai) * len;
+                    //var x = Math.Cos(ai) * len;
+                    //var y = Math.Sin(ai) * len;
 
                     if (len != 0)
                     {
                         //fs.appendFile('data.txt',`${ x},${ y}\r\n`,err => {
                         //if (err) Console.WriteLine(err);
-                        addAction((int)x, (int)y, ai, (int)len);
+                        addAction(new RadAndLen(ai, (int)len));
                         count++;
                     };
                 }

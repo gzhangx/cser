@@ -29,7 +29,6 @@ namespace cser
         }
 
         W32Serial comm = new W32Serial();
-        public List<Point> gpoints = new List<Point>();
         object lockobj = new object();
 
         X4Tran tran;
@@ -46,17 +45,16 @@ namespace cser
             }
         }
         double zeroAng = 0;
-        public List<Point> angleLen = new List<Point>();
+        public List<RadAndLen> angleLen = new List<RadAndLen>();
         private void button1_Click(object sender, EventArgs e)
         {
             if (tran == null)
             {
-                tran = new X4Tran((x, y, angle, len) =>
+                tran = new X4Tran((rl) =>
                 {
                     lock (lockobj)
                     {
-                        gpoints.Add(new Point(x, y));
-                        angleLen.Add(new Point((int)(angle/Math.PI*180), len));
+                        angleLen.Add(rl);
                         panelRadar.BeginInvoke(new Action(() =>
                         {
                             panelRadar.Invalidate();
@@ -68,15 +66,8 @@ namespace cser
                     Console.WriteLine("zero angle is " + z);
                     lock (lockobj)
                     {
-                        lpoints.Clear();
-                        
-                        {
-                            lpoints.AddRange(gpoints);
-                            gpoints.Clear();
-                            if (!lpoints.Any()) return;
-                            panelRadar.AddPoints(lpoints, angleLen);
-                            angleLen.Clear();
-                        }
+                        panelRadar.AddPoints(angleLen);
+                        angleLen.Clear();
                     }
                 });
             }
@@ -93,8 +84,7 @@ namespace cser
             comm.Info();
         }
 
-        List<Point> lpoints = new List<Point>();
-
+        
         private void Form1_Load(object sender, EventArgs e)
         {
             Backbuffer = new Bitmap(panelRadar.Width, panelRadar.Height);            

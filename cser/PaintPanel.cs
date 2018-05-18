@@ -11,8 +11,7 @@ namespace cser
     public class PaintPanel : Panel
     {
         Bitmap Backbuffer;
-        List<Point> _points = new List<Point>();
-        List<Point> _angleLen = new List<Point>();
+        List<RadAndLen> _angleLen = new List<RadAndLen>();
         object lockobj = new object();
         protected int mouseX, mouseY;
         protected bool mouseMoved = false;
@@ -21,12 +20,10 @@ namespace cser
         {
             _showInfo = s;
         }
-        public void AddPoints(List<Point> o, List<Point> al)
+        public void AddPoints(List<RadAndLen> al)
         {
             lock(lockobj)
-            {
-                _points.Clear();
-                _points.AddRange(o);
+            {                
                 _angleLen.Clear();
                 _angleLen.AddRange(al);
             }
@@ -57,11 +54,16 @@ namespace cser
             mouseX = e.X;
             mouseY = e.Y;
         }
+
+        string fmt(double d, int pad = 8)
+        {
+            return string.Format("{0:0.00}", d).PadLeft(pad);
+        }
         protected override void OnPaint(PaintEventArgs e) {
-            List<Point> points = new List<Point>();
+            List<RadAndLen> points = new List<RadAndLen>();
             lock(lockobj)
             {
-                points.AddRange(_points);
+                points.AddRange(_angleLen);
             }
             int w = Width / 2;
             int h = Height / 2;
@@ -69,15 +71,19 @@ namespace cser
             int max = 3000; // Math.Max(lpoints.Max(p => Math.Abs(p.X)), lpoints.Max(p => Math.Abs(p.Y)))*2+1;
             using (var g = Graphics.FromImage(Backbuffer))
             {
-                g.Clear(Color.White);
-                g.DrawLine(Pens.Black, 0, h, Width, h);
-                g.DrawLine(Pens.Black, w, 0, w, Height);
-                points.ForEach(p =>
+                Action<RadAndLen, Brush,bool> plot = (p,br, isLine) =>
                 {
                     int x = (p.X * h / max) + w;
                     int y = h - ((p.Y * h) / max);
-                    g.FillRectangle(Brushes.Black, x, y, 1, 1);
-                });
+                    if (isLine)
+                        g.DrawLine(Pens.Red,x, y, w, h);
+                    else
+                        g.FillRectangle(br, x, y, 1, 1);
+                };
+                g.Clear(Color.White);
+                g.DrawLine(Pens.Black, 0, h, Width, h);
+                g.DrawLine(Pens.Black, w, 0, w, Height);
+                points.ForEach(p=>plot(p, Brushes.Black,false));
 
                 if (mouseMoved)
                 {
@@ -89,12 +95,12 @@ namespace cser
                     {
                         double minDiff = 0;
                         double maxDiff = 0;
-                        bool found = false;
-                        Point minal = new Point();
-                        foreach(var al in _angleLen)
+                        RadAndLen minal = null;
+                        foreach(var al in points)
                         {
-                            var diff = Math.Abs(al.X - (rad*180/Math.PI));
-                            if (!found)
+                            var diff = Math.Abs(al.Rad - rad);
+                            if (diff > 2 * Math.PI) diff -= 2 * Math.PI;
+                            if (minal == null)
                             {
                                 minal = al;
                                 maxDiff = minDiff = diff;
@@ -108,7 +114,11 @@ namespace cser
                                 }
                             }
                         }
-                        _showInfo.SetTextInfo($"{mouseX - w} {h - mouseY} {rad*180/Math.PI} min={minDiff} max={maxDiff} ang={minal.X} len={minal.Y}");
+                        if (minal != null)
+                        {
+                            plot(minal, Brushes.Red,true);
+                            _showInfo.SetTextInfo($"{fmt(mouseX - w)} {fmt(h - mouseY)} {fmt(rad * 180 / Math.PI)}  ang={fmt(minal.Rad * 180 / Math.PI)} len={fmt(minal.Len)}");
+                        }
                     }
                 }
             }
