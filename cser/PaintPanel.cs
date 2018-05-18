@@ -14,6 +14,8 @@ namespace cser
         List<Point> _points = new List<Point>();
         List<Point> _angleLen = new List<Point>();
         object lockobj = new object();
+        protected int mouseX, mouseY;
+        protected bool mouseMoved = false;
         public void AddPoints(List<Point> o, List<Point> al)
         {
             lock(lockobj)
@@ -42,19 +44,13 @@ namespace cser
             if (h < 100) h = 100;
             Backbuffer = new Bitmap(w, h);
         }
-        public void dd()
+
+        protected override void OnMouseMove(MouseEventArgs e)
         {
-            this.DoubleBuffered = true;
-
-            // or
-
-            SetStyle(ControlStyles.AllPaintingInWmPaint, true);
-            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
-            this.SetStyle(
-            ControlStyles.UserPaint |
-            ControlStyles.AllPaintingInWmPaint |
-            ControlStyles.DoubleBuffer, true);
-            UpdateStyles();
+            base.OnMouseMove(e);
+            mouseMoved = true;
+            mouseX = e.X;
+            mouseY = e.Y;
         }
         protected override void OnPaint(PaintEventArgs e) {
             List<Point> points = new List<Point>();
@@ -77,6 +73,11 @@ namespace cser
                     int y = ((p.Y * h) / max) + h;
                     g.FillRectangle(Brushes.Black, x, y, 1, 1);
                 });
+
+                if (mouseMoved)
+                {
+                    g.DrawLine(Pens.Blue, mouseX, mouseY, w, h);
+                }
             }
             e.Graphics.DrawImageUnscaled(Backbuffer, 0, 0);
         }
