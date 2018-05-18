@@ -16,6 +16,11 @@ namespace cser
         object lockobj = new object();
         protected int mouseX, mouseY;
         protected bool mouseMoved = false;
+        protected IShowInfo _showInfo;
+        public void SetShowInfo(IShowInfo s)
+        {
+            _showInfo = s;
+        }
         public void AddPoints(List<Point> o, List<Point> al)
         {
             lock(lockobj)
@@ -77,6 +82,10 @@ namespace cser
                 if (mouseMoved)
                 {
                     g.DrawLine(Pens.Blue, mouseX, mouseY, w, h);
+                    if (_showInfo != null)
+                    {
+                        _showInfo.SetTextInfo($"{mouseX} {mouseY}");
+                    }
                 }
             }
             e.Graphics.DrawImageUnscaled(Backbuffer, 0, 0);

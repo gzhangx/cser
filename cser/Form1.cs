@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace cser
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form, IShowInfo
     {
         Bitmap Backbuffer;
         public Form1()
@@ -23,9 +23,9 @@ namespace cser
 
             System.Reflection.PropertyInfo controlProperty = typeof(System.Windows.Forms.Control)
         .GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            controlProperty.SetValue(panel1, true, null);
+            controlProperty.SetValue(panelRadar, true, null);
 
-            //panel1.dd();   
+            this.panelRadar.SetShowInfo(this);
         }
 
         W32Serial comm = new W32Serial();
@@ -57,9 +57,9 @@ namespace cser
                     {
                         gpoints.Add(new Point(x, y));
                         angleLen.Add(new Point((int)(angle/Math.PI*180), len));
-                        panel1.BeginInvoke(new Action(() =>
+                        panelRadar.BeginInvoke(new Action(() =>
                         {
-                            panel1.Invalidate();
+                            panelRadar.Invalidate();
                         }));
                     }
                 }, z=>
@@ -74,7 +74,7 @@ namespace cser
                             lpoints.AddRange(gpoints);
                             gpoints.Clear();
                             if (!lpoints.Any()) return;
-                            panel1.AddPoints(lpoints, angleLen);
+                            panelRadar.AddPoints(lpoints, angleLen);
                             angleLen.Clear();
                         }
                     }
@@ -97,7 +97,7 @@ namespace cser
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Backbuffer = new Bitmap(panel1.Width, panel1.Height);            
+            Backbuffer = new Bitmap(panelRadar.Width, panelRadar.Height);            
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -109,6 +109,14 @@ namespace cser
         {
             base.OnFormClosing(e);
             comm.Close();
+        }
+
+        public void SetTextInfo(string text)
+        {
+            this.BeginInvoke(new Action(()=>
+            {
+                textBoxInfo.Text = text;
+            }));
         }
     }
 }
