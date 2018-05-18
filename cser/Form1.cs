@@ -97,9 +97,19 @@ namespace cser
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Backbuffer = new Bitmap(panel1.Width, panel1.Height);
+            Backbuffer = new Bitmap(panel1.Width, panel1.Height);            
         }
 
+        private void button3_Click(object sender, EventArgs e)
+        {
+            comm.Close();
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            comm.Close();
+        }
     }
 }
 

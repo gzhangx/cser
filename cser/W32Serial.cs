@@ -26,9 +26,10 @@ namespace cser
             string errorMessage = new Win32Exception(Marshal.GetLastWin32Error()).Message;
             return errorMessage;
         }
-        protected IntPtr m_hCommPort;
+        protected IntPtr m_hCommPort = IntPtr.Zero;
         public void Open()
         {
+            if (m_hCommPort != IntPtr.Zero) return;
             SerialPort comm = new SerialPort();
             comm.BaudRate = 128000;
             m_hCommPort = GWin32.CreateFile("COM3",
@@ -85,6 +86,12 @@ namespace cser
             commTimeouts.WriteTotalTimeoutConstant = 0;    // Const part of write timeout
             commTimeouts.WriteTotalTimeoutMultiplier = 0;  // Variable part of write timeout (per byte)
             GWin32.SetCommTimeouts(m_hCommPort, ref commTimeouts);
+        }
+
+        public void Close()
+        {
+            GWin32.CloseHandle(m_hCommPort);
+            m_hCommPort = IntPtr.Zero;
         }
 
         public void Info()
