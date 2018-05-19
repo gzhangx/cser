@@ -10,6 +10,7 @@ namespace cser
 {
     public class PaintPanel : Panel
     {
+        const int MAXKEEP = 5;
         Bitmap Backbuffer;
         List<RadAndLen> _angleLen = new List<RadAndLen>();
         object lockobj = new object();
@@ -73,7 +74,7 @@ namespace cser
             {
                 Action<RadAndLen, Brush,bool> plot = (p,br, isLine) =>
                 {
-                    int x = (p.X * h / max) + w;
+                    int x = w - (p.X * h / max) ;
                     int y = h - ((p.Y * h) / max);
                     if (isLine)
                         g.DrawLine(Pens.Red,x, y, w, h);
@@ -85,35 +86,44 @@ namespace cser
                 g.DrawLine(Pens.Black, w, 0, w, Height);
                 points.ForEach(p=>plot(p, Brushes.Black,false));
 
-                if (mouseMoved)
+                if (mouseMoved && points.Any())
                 {
+                    SortedList<double, List<RadAndLen>> sortedList = new SortedList<double, List<RadAndLen>>();
                     g.DrawLine(Pens.Blue, mouseX, mouseY, w, h);
-                    int x = mouseX - w;
+                    int x = w- mouseX;
                     int y = h - mouseY;
                     var rad = Math.Atan2(y, x);
                     if (_showInfo != null)
                     {
-                        double minDiff = 0;
-                        double maxDiff = 0;
-                        RadAndLen minal = null;
+                        
                         foreach(var al in points)
                         {
-                            var diff = Math.Abs(al.Rad - rad);
+                            var diff = Math.Abs(al.Rad - rad);                            
                             if (diff > 2 * Math.PI) diff -= 2 * Math.PI;
-                            if (minal == null)
+                            if (sortedList.ContainsKey(diff))
                             {
-                                minal = al;
-                                maxDiff = minDiff = diff;
-                            }else
+                                sortedList[diff].Add(al);
+                            }
+                            else
                             {
-                                if (diff > maxDiff) maxDiff = diff;
-                                else if (diff < minDiff)
-                                {
-                                    minDiff = diff;
-                                    minal = al;
-                                }
+                                sortedList.Add(diff, new List<RadAndLen> { al });
+                            }
+                            if (sortedList.Count > MAXKEEP)
+                            {
+                                sortedList.RemoveAt(sortedList.Count - 1);
                             }
                         }
+
+                        foreach(var diff in sortedList.Keys)
+                        {
+                            var lst = sortedList[diff];
+                            foreach (var al in lst)
+                            {
+                                plot(al, Brushes.Blue, true);
+                            }
+                        }
+                        double minDiff = sortedList.First().Key;
+                        RadAndLen minal = sortedList.First().Value[0];
                         if (minal != null)
                         {
                             plot(minal, Brushes.Red,true);
